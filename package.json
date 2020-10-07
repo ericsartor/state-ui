@@ -1,0 +1,20 @@
+{
+  "name": "ui-framework",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist.js",
+  "scripts": {
+    "doc": "jsdoc -c ./jsdoc-config.json dist.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "boxy-jsdoc-template": "^2.0.2",
+    "jsdoc": "^3.6.6"
+  },
+  "dependencies": {},
+  "files": [
+    "dist.js"
+  ]
+}

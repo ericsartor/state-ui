@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "module": "none",
+    "target": "es5",
+    "checkJs": true
+  },
+  "include": ["dist.js"]
+}

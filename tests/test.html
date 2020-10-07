@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ui tests</title>
+</head>
+<body>
+
+  <button id="inc">+</button>
+
+  <script>
+    // test global naming collisions
+    // var DataState = {};
+  </script>
+  <script src="../dist.js"></script>
+  <script>
+    const state = new State({
+      counter: 0,
+      input: '',
+    });
+
+    // counter increment button
+    const inc = new StateElement('#inc', {
+      handlers: {
+        click: () => {
+          state.data.counter.modify((c) => c + 1);
+        },
+      },
+    });
+    
+    // counter display
+    const counterEl = new StateElement('div', state.data.counter);
+    document.body.appendChild(counterEl);
+
+    const input = new StateElement('input', state.data.input);
+    document.body.appendChild(input);
+
+    const display = new StateElement('div', state.data.input);
+    document.body.appendChild(display);
+
+    // test overwriting datastate
+    // state.data.counter = 'asd';
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "opts": {
+    "tutorials": "./tutorials",
+    "destination": "./docs/",
+    "template": "./node_modules/boxy-jsdoc-template"
+  }
+}
