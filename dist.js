@@ -1,6 +1,6 @@
 (function() {
 
-  // POLYFILLS
+  // ANCHOR POLYFILLS
 
   // @ts-ignore (findIndex)
   if (!Array.prototype.findIndex) {
@@ -53,6 +53,7 @@
 
 
 
+  // ANCHOR globals/helpers
 
   var LIB_NAME = 'EricUILib';
   var GLOBAL_NAME = LIB_NAME;
@@ -64,6 +65,9 @@
   function error(message) {
     return Error(LIB_NAME + ': ' + message);
   }
+
+
+  // ANCHOR types
 
   /**
    * @callback ModifierCallback
@@ -91,6 +95,8 @@
    * }} StateElementOptions
    */
 
+
+  // ANCHOR DataState()
   /**
    * Represents one piece of state.  This is not meant to be called on its own.
    * @constructor
@@ -164,6 +170,8 @@
 
   }
 
+
+  // ANCHOR State()
   /**
    * Represents a collection of states
    * @constructor
@@ -194,6 +202,8 @@
       return outObject;
     })(initialState);
 
+    var dataKeys = Object.keys(stateCopy);
+
     /**
      * Key/value of state objects.
      * 
@@ -202,7 +212,7 @@
     this.data = {};
 
     // fill data object with DataStates
-    Object.keys(stateCopy).forEach(function(key) {
+    dataKeys.forEach(function(key) {
       var value = stateCopy[key];
       var dataState = new DataState(value);
       Object.defineProperty(this.data, key, {
@@ -219,16 +229,77 @@
      * Executes all subscription callbacks on all DataStates.
      */
     this.update = function() {
-      Object.keys(this.data).forEach(function(key) {
+      dataKeys.forEach(function(key) {
         this.data[key].update();
-      });
+      }, this);
     };
+
+    // private method for use with localStorage
+    var serialize = function () {
+      var obj = {};
+      dataKeys.forEach(function(key) {
+        obj[key] = this.data[key].get();
+      }, this);
+      return JSON.stringify(obj);
+    }.bind(this);
+
+    var loadState = function(state) {
+      dataKeys.forEach(function(key) {
+        this.data[key].set(state[key]);
+      }, this);
+    }.bind(this);
+
+    /**
+     * Creates or loads an entry in localStorage for the entire state object.
+     * The state must be serializable.
+     * WHen using "manual = false", performance may suffer, as the whole state must be serialized every time it is updated.
+     * When "manual = true", a function will be returned that updates the localStorage when called.
+     * 
+     * @param {string} name
+     * @param {boolean} manual
+     * @returns {Function|undefined}
+     */
+    this.useLocalStorage = function(name, manual) {
+
+      if (typeof name !== 'string' || name === '') {
+        throw error('(State.useLocalStorage) "name" must be a non-empty string.');
+      }
+
+      if (State.localStores.indexOf(name) !== -1) {
+        throw error('(State.useLocalStorage) "name" value was not unique.');
+      }
+
+      var storedState = localStorage.getItem(name);
+
+      if (storedState) {
+        loadState(JSON.parse(storedState));
+      } else {
+        localStorage.setItem(name, serialize());
+      }
+
+      if (!manual) {
+        dataKeys.forEach(function(key) {
+          this.data[key].subscribe(function() {
+            localStorage.setItem(name, serialize());
+          });
+        }, this);
+        return;
+      } else {
+        return function() {
+          localStorage.setItem(name, serialize());
+        };
+      }
+
+    }
 
     return this;
 
   }
 
+  State.localStores = [];
 
+
+  // ANCHOR StateElement
   /**
    * Create a DOM element that is tied to state in some way.
    * @constructor
