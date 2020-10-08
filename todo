@@ -1,6 +1,7 @@
-- optionally save all state to a cookie
-  - can be triggered by function or always updated each time state chagnes
-
-- router
-
+- router - IN PROGRESS
 - message bus
+- two way binding on arrays and objects
+
+completed
+
+- localStorage support for persisting state between reloads

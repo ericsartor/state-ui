@@ -7,7 +7,12 @@
 </head>
 <body>
 
-  <button id="inc">+</button>
+  <button id="counter-increment">+</button>
+  <div id="counter-display"></div>
+  <input id="input">
+  <div id="input-display"></div>
+
+  <div id="router-view"></div>
 
   <script>
     // test global naming collisions
@@ -23,26 +28,27 @@
     state.useLocalStorage('state', false);
 
     // counter increment button
-    const inc = new StateElement('#inc', {
+    new StateElement('#counter-increment', {
       handlers: {
         click: () => {
           state.data.counter.modify((c) => c + 1);
         },
       },
     });
-    
-    // counter display
-    const counterEl = new StateElement('div', state.data.counter);
-    document.body.appendChild(counterEl);
-
-    const input = new StateElement('input', state.data.input);
-    document.body.appendChild(input);
-
-    const display = new StateElement('div', state.data.input);
-    document.body.appendChild(display);
+    new StateElement('#counter-display', state.data.counter);
+    new StateElement('#input', state.data.input);
+    new StateElement('#input-display', state.data.input);
 
     // test overwriting datastate
     // state.data.counter = 'asd';
+
+    const router = new Router(document.getElementById('router-view'));
+    router.addRoute('/:param/something', () => {
+      const div = document.createElement('div');
+      div.textContent = 'sup';
+      return div;
+    });
+    router.loadRoute('/param1/something?query1=value');
   </script>
 </body>
 </html>

@@ -85,6 +85,13 @@
    * @param {Array.<DataState>} states - The states that trigger this callback.
    */
 
+   /**
+    * @callback RouteInitiazlier - A function that must return DOM content for a given route, provided with HREF and query params.
+    * @param {string} route - route without query params
+    * @param {Object.<string, string>} params - key/value path params object
+    * @param {Object.<string, string>} queries - key/value query object
+    */
+
   /**
    * @typedef {{
    *    textContent: (string|number|DataState),
@@ -251,44 +258,40 @@
 
     /**
      * Creates or loads an entry in localStorage for the entire state object.
-     * The state must be serializable.
-     * WHen using "manual = false", performance may suffer, as the whole state must be serialized every time it is updated.
-     * When "manual = true", a function will be returned that updates the localStorage when called.
+     * The state must be serializable for this to work correctly.
+     * A function is returned that can be used to update the state in localStorage
      * 
-     * @param {string} name
-     * @param {boolean} manual
-     * @returns {Function|undefined}
+     * @param {string} name - unique name used for localStorage, prefix with "state-ui-"
+     * @returns {Function|undefined} - the update function used to update the state in localStorage
      */
-    this.useLocalStorage = function(name, manual) {
+    this.useLocalStorage = function(name) {
 
+      // validate name value
       if (typeof name !== 'string' || name === '') {
         throw error('(State.useLocalStorage) "name" must be a non-empty string.');
       }
 
+      name = 'state-ui-' + name;
+
+      // validate unique name
       if (State.localStores.indexOf(name) !== -1) {
         throw error('(State.useLocalStorage) "name" value was not unique.');
       }
 
       var storedState = localStorage.getItem(name);
-
+      
+      
+      // attempt to load pre-existing state or initialize the localStorage
       if (storedState) {
         loadState(JSON.parse(storedState));
       } else {
         localStorage.setItem(name, serialize());
       }
 
-      if (!manual) {
-        dataKeys.forEach(function(key) {
-          this.data[key].subscribe(function() {
-            localStorage.setItem(name, serialize());
-          });
-        }, this);
-        return;
-      } else {
-        return function() {
-          localStorage.setItem(name, serialize());
-        };
-      }
+      // return update function
+      return function() {
+        localStorage.setItem(name, serialize());
+      };
 
     }
 
@@ -299,7 +302,7 @@
   State.localStores = [];
 
 
-  // ANCHOR StateElement
+  // ANCHOR StateElement()
   /**
    * Create a DOM element that is tied to state in some way.
    * @constructor
@@ -430,10 +433,96 @@
 
   }
 
+  // ANCHOR Router()
+  /**
+   * Router() is a singleton class that lets you load content based on the current HREF.
+   * It allows you simulate a multipage app from a single page.
+   * 
+   * @constructor
+   * @param {HTMLElement} target - the element where the desired content will be loaded for all routes
+   * 
+   */
+  function Router(target) {
+
+    if (Router.instance) {
+      return Router.instance;
+    }
+
+    // private vars
+    var routes = [];
+
+    /**
+     * Adds a route handler for the router, which loads a given element when the HREF matches a given pattern.
+     * Accepts a pattern to match and a function that will be provided with the queries and params that must return the desired content for the route.
+     * 
+     * @param {string|RegExp} pattern - literal string or regex to match route against.  string can use params like ":param"in place of route segments.
+     * @param {RouteInitiazlier} initializer - function that should create the DOM content to be loaded for this route
+     */
+    this.addRoute = function(pattern, initializer) {
+      routes.push({ pattern: pattern, initializer: initializer });
+    };
+
+    this.loadRoute = function(route) {
+      if (route[0] !== '/')
+        throw Error('(Router) routes must start with a leading slash.')
+
+      for (var i = 0; i < routes.length; i++) {
+        var pattern = routes[i].pattern;
+
+        if (typeof pattern === 'string') {
+          var queryIndex = route.indexOf('?');
+          var path = route.slice(0, queryIndex === -1 ? pattern.length : queryIndex);
+          var routeSplit = path.slice(1).split('/');
+
+          var patternSplit = pattern.slice(1).split('/');
+
+          var params = {};
+          var matched = patternSplit.every(function(segment, i) {
+            var paramMatch = segment.match(/^:([a-zA-Z]+)$/);
+            if (paramMatch) {
+              params[paramMatch[1]] = routeSplit[i];
+            }
+            return segment === routeSplit[i] || paramMatch;
+          });
+
+          if (matched) {
+            var query = route.slice(queryIndex + 1);
+            var queries = {};
+            if (queryIndex !== -1) {
+              query.split('&').forEach(function(query) {
+                var split = query.split('=');
+                queries[split[0]] = split[1];
+              });
+            }
+            var content = routes[i].initializer(path, params, queries);
+
+            if (content instanceof HTMLElement === false)
+              throw Error('(Router) initializer must return an HTMLElement.');
+
+            target.innerHTML = '';
+            target.appendChild(content);
+
+            return;
+          }
+        }
+      }
+
+      throw Error('(Router) did not find route matching: ' + route)
+    };
+
+    return this;
+
+  }
+
+  Router.instance = null;
+
+  // ANCHOR exports
+
   var exports = {
     DataState: DataState,
     State: State,
     StateElement: StateElement,
+    Router: Router,
   };
 
   // check for naming collisions and assign global references
