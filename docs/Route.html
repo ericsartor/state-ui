@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>StateElement - Documentation</title>
+    <title>Route - Documentation</title>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -25,7 +25,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">StateElement</h1>
+    <h1 class="page-title">Route</h1>
     
 
     
@@ -46,7 +46,7 @@
 
     
         <h2>
-        StateElement
+        Route
         </h2>
         
     
@@ -61,17 +61,17 @@
     
 
 
-<div class="group" id="StateElement">
+<div class="group" id="Route">
 
 
-    <h4 class="name"><span class="type-signature"></span>new <b>StateElement</b><span class="signature">(<span class="sig-params">elementType<span class="params-divider">, </span>options</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name"><span class="type-signature"></span>new <b>Route</b><span class="signature">(<span class="sig-params">path<span class="params-divider">, </span>query<span class="signature-attributes">opt</span></span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Create a DOM element that is tied to state in some way.
+    A Route() represents a particular view in your app, and is a combination of a path (potentially with params) and an optional query.
 </div>
 
 
@@ -89,26 +89,36 @@
     
 
     
-        <span class="name">elementType</span><span class="type"><span class="param-type">:string|HTMLElement</span></span>
+        <span class="name">path</span><span class="type"><span class="param-type">:string</span></span>
     
 
     
 
     
 
-    <div class="description last">An HTMLElement reference, an ID query selector string, or an HTMLElement tag name, same as would be passed to document.createElement().</div>
+    <div class="description last">the path that represents the view you want to show, ex. /profiles/123</div>
 
     
 
     
-        <span class="name">options</span><span class="type"><span class="param-type">:<a href="global.html#StateElementOptions">StateElementOptions</a></span></span>
+        <span class="name">query</span><span class="type"><span class="param-type">:Object</span></span>
     
 
     
 
     
+        <span class="attributes">
+        
+            (optional)<br>
+        
 
-    <div class="description last">Options for the element, including state bindings, CSS and HTMLElement properties.</div>
+        
+
+        
+        </span>
+    
+
+    <div class="description last">key/value pairs representing a URL query string</div>
 
     
 </div>
@@ -131,48 +141,12 @@
 
 
 
-<h5>Details</h5>
-<dl class="details">
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-
-    
-    <dt class="tag-tutorial">Tutorials</dt>
-    <dd class="tag-tutorial">
-        <ul>
-            <li><a href="tutorial-StateElement_.html">StateElement</a></li>
-        </ul>
-    </dd>
-    
-
-    
-
-    
-</dl>
- 
 
 
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line334">line 334</a></div>
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line466">line 466</a></div>
 
 
 </div>

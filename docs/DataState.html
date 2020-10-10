@@ -20,7 +20,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#update">update</a></li><li data-type='method'><a href="State.html#useLocalStorage">useLocalStorage</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#mutate">mutate</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="Route.html">Route</a></li><li><a href="Router.html">Router</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="Router.html#addRoute">addRoute</a></li><li data-type='method'><a href="Router.html#go">go</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#update">update</a></li><li data-type='method'><a href="State.html#useLocalStorage">useLocalStorage</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -71,7 +71,7 @@
 
 
 <div class="description">
-    Represents one piece of state.  This is not meant to be called on its own.
+    Represents one piece of state.  You should not instantiate this on its own, it is meant to be used by the State() class.
 </div>
 
 
@@ -219,7 +219,7 @@
 
 
 <div class="description">
-    Update data based on its current value.
+    Update data based on its current value then execute subscription.
 </div>
 
 
@@ -273,6 +273,81 @@
 
 
 <div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line173">line 173</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="mutate">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>mutate</b><span class="signature">(<span class="sig-params">newValue</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Change data value without executing subscriptions.  Could be used when the data is updated often but the subscribers don't need to update everytime.  Use update() to update subscribers.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">newValue</span><span class="type"><span class="param-type">:any</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">The new value.</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line183">line 183</a></div>
 
 
 </div>
@@ -369,7 +444,7 @@
 
 
 <div class="description">
-    Register a callback to be run when set() or update() get called on this data.
+    Register a callback to be run when set(), modify() or update() get called on this data.
 </div>
 
 
@@ -406,7 +481,7 @@
 
     
 
-    <div class="description last">When "true", the subscription callback is run immediately upon registration.</div>
+    <div class="description last">When "true", the subscription callback is run immediately upon registration, generally used to intialize a DOM element's content.</div>
 
     
 </div>
@@ -456,7 +531,7 @@
 
 
 <div class="description">
-    Execute subscriptions without modifying current value.
+    Execute subscriptions without modifying current value.  Meant to be used after mutate() to notify subscribers of the new value.
 </div>
 
 
@@ -489,7 +564,7 @@
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line181">line 181</a></div>
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line190">line 190</a></div>
 
 
 </div>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>State - Documentation</title>
+    <title>Router - Documentation</title>
     <!--[if lt IE 9]>
       <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
     <![endif]-->
@@ -25,7 +25,7 @@
 
 <div id="main">
     
-    <h1 class="page-title">State</h1>
+    <h1 class="page-title">Router</h1>
     
 
     
@@ -46,7 +46,7 @@
 
     
         <h2>
-        State
+        Router
         </h2>
         
     
@@ -61,17 +61,17 @@
     
 
 
-<div class="group" id="State">
+<div class="group" id="Router">
 
 
-    <h4 class="name"><span class="type-signature"></span>new <b>State</b><span class="signature">(<span class="sig-params">initialState</span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name"><span class="type-signature"></span>new <b>Router</b><span class="signature">(<span class="sig-params">target</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Represents a collection of states
+    Router() is a singleton class that lets you load content based on the current HREF.It allows you simulate a multipage app from a single page.
 </div>
 
 
@@ -89,14 +89,14 @@
     
 
     
-        <span class="name">initialState</span><span class="type"><span class="param-type">:Object.&lt;string, *></span></span>
+        <span class="name">target</span><span class="type"><span class="param-type">:HTMLElement</span></span>
     
 
     
 
     
 
-    <div class="description last">Key/value map of the initial values for this state.</div>
+    <div class="description last">the element where the desired content will be loaded for all routes</div>
 
     
 </div>
@@ -124,7 +124,7 @@
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line208">line 208</a></div>
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line486">line 486</a></div>
 
 
 </div>
@@ -143,41 +143,6 @@
     
 
     
-        <h3 class="subsection-title">Members</h3>
-
-        
-            
-
-<div class="group" id="data">
-
-<h4 class="name"><span class="type-signature"></span>data<span class="type-signature">:Object.&lt;string, <a href="DataState.html">DataState</a>></span></h4>
-
-
-
-
-<div class="description">
-    Key/value of state objects.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line239">line 239</a></div>
-
-
-</div>
-
-        
-    
 
     
         <h3 class="subsection-title">Methods</h3>
@@ -189,72 +154,17 @@
     
 
 
-<div class="group" id="update">
+<div class="group" id="addRoute">
 
 
-    <h4 class="name"><span class="type-signature"></span><b>update</b><span class="signature">(<span class="sig-params"></span>)</span><span class="type-signature"></span></h4>
-
-    
-
-
-
-<div class="description">
-    Executes all subscription callbacks on all DataStates.
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line258">line 258</a></div>
-
-
-</div>
-
-        
-            
-
-
-    
-
-
-<div class="group" id="useLocalStorage">
-
-
-    <h4 class="name"><span class="type-signature"></span><b>useLocalStorage</b><span class="signature">(<span class="sig-params">name</span>)</span><span class="type-signature">:function|undefined</span></h4>
+    <h4 class="name"><span class="type-signature"></span><b>addRoute</b><span class="signature">(<span class="sig-params">pattern<span class="params-divider">, </span>initializer</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Creates or loads an entry in localStorage for the entire state object.The state must be serializable for this to work correctly.A function is returned that can be used to update the state in localStorage
+    Adds a route handler for the router, which loads a given element when the HREF matches a given pattern.Accepts a pattern to match and a function that will be provided with the queries and params that must return the desired content for the route.
 </div>
 
 
@@ -272,14 +182,26 @@
     
 
     
-        <span class="name">name</span><span class="type"><span class="param-type">:string</span></span>
+        <span class="name">pattern</span><span class="type"><span class="param-type">:string</span></span>
     
 
     
 
     
 
-    <div class="description last">unique name used for localStorage, prefix with "state-ui-"</div>
+    <div class="description last">string to match route against.  string can use params like ":param" in place of route segments.  must start with a forward slash. ex: /route/with/:param</div>
+
+    
+
+    
+        <span class="name">initializer</span><span class="type"><span class="param-type">:<a href="global.html#RouteInitializer">RouteInitializer</a></span></span>
+    
+
+    
+
+    
+
+    <div class="description last">function that should create/return the DOM content to be loaded for this route</div>
 
     
 </div>
@@ -297,28 +219,40 @@
 
 
 
-<h5>Returns</h5>
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line502">line 502</a></div>
+
+
+</div>
 
         
-
-
-<dl class="param-type">
-    <dt>
-        Type
-    </dt>
-    <dd>
-        <span class="param-type">:function|undefined</span>
-    </dd>
-</dl>
-
-<div class="param-desc">
-    - the update function used to update the state in localStorage
-</div>
+            
 
 
     
 
 
+<div class="group" id="go">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>go</b><span class="signature">(<span class="sig-params">route</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Attempts to match a Route against a registered pattern, and generate a new view using the registered initializer.
+</div>
 
 
 
@@ -327,7 +261,50 @@
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line287">line 287</a></div>
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">route</span><span class="type"><span class="param-type">:<a href="Route.html">Route</a></span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the Route object to load that will be provided to the matched initializer</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line589">line 589</a></div>
 
 
 </div>
