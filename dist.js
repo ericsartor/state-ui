@@ -66,6 +66,17 @@
     return Error(LIB_NAME + ': ' + message);
   }
 
+  function validateRoutePattern(pattern) {
+    if (typeof pattern !== 'string')
+      throw Error('pattern must be a string');
+    if (pattern === '')
+      throw Error('pattern must not be empty');
+    if (pattern[0] !== '/')
+      throw Error('pattern must have a leading slash: ' + pattern);
+    if (pattern.length > 1 && pattern[pattern.length - 1] === '/')
+      throw Error('pattern must not have a trailing slash: ' + pattern);
+  }
+
 
   // ANCHOR types
 
@@ -409,7 +420,7 @@
         element.value = newValue.toString();
       }, true);
 
-      element.addEventListener('input', () => {
+      element.addEventListener('input', function() {
         // @ts-ignore (value)
         bindTo.set(element.value);
       });
@@ -430,6 +441,25 @@
     }
 
     return element;
+
+  }
+
+  // ANCHOR Route()
+  /**
+   * A Route() represents a location on your website, and is a combination of a path and optional query.
+   * 
+   * @constructor
+   * @param {string} path - the path that represents the view you want to show, ex. /profiles/123
+   * @param {Object} [query] - key/value pairs representing a URL query string
+   *  
+   */
+  function Route(path, query) {
+
+    validateRoutePattern(path)
+
+    this.path = path;
+    this.query = query || {};
+    return this;
 
   }
 
@@ -455,60 +485,152 @@
      * Adds a route handler for the router, which loads a given element when the HREF matches a given pattern.
      * Accepts a pattern to match and a function that will be provided with the queries and params that must return the desired content for the route.
      * 
-     * @param {string|RegExp} pattern - literal string or regex to match route against.  string can use params like ":param"in place of route segments.
+     * @param {string} pattern - string to match route against.  string can use params like ":param" in place of route segments.  must start with a forward slash.
      * @param {RouteInitiazlier} initializer - function that should create the DOM content to be loaded for this route
      */
     this.addRoute = function(pattern, initializer) {
+      // validate pattern
+      validateRoutePattern(pattern)
+
+      var segMap = {};
+      pattern.split('/').forEach(function(segment) {
+        segMap[segment] = segMap[segment] === undefined ? 1 : segMap[segment] + 1;
+      });
+      var duplicateParams = [];
+      Object.keys(segMap).forEach(function(segment) {
+        if (segment.match(/^:[a-zA-Z]+$/) && segMap[segment] > 1) {
+          duplicateParams.push(segment);
+        }
+      });
+
+      if (duplicateParams.length > 0)
+        throw Error('Duplicate params found: ' + duplicateParams.join(', '));
+
+      // validate initializer
+      if (typeof initializer !== 'function') 
+        throw Error('(Router) initializer must be a function');
+
       routes.push({ pattern: pattern, initializer: initializer });
     };
 
-    this.loadRoute = function(route) {
-      if (route[0] !== '/')
-        throw Error('(Router) routes must start with a leading slash.')
+    // used internall, and exposed externally through this.go()
+    function loadRoute(route, doNotPushState) {
+      if ((route instanceof Route) === false)
+        throw Error('(Router) route must be a Route object.')
 
       for (var i = 0; i < routes.length; i++) {
         var pattern = routes[i].pattern;
 
-        if (typeof pattern === 'string') {
-          var queryIndex = route.indexOf('?');
-          var path = route.slice(0, queryIndex === -1 ? pattern.length : queryIndex);
-          var routeSplit = path.slice(1).split('/');
+        var routeSplit = route.path.slice(1).split('/');
+        var patternSplit = pattern.slice(1).split('/');
 
-          var patternSplit = pattern.slice(1).split('/');
-
-          var params = {};
-          var matched = patternSplit.every(function(segment, i) {
-            var paramMatch = segment.match(/^:([a-zA-Z]+)$/);
-            if (paramMatch) {
-              params[paramMatch[1]] = routeSplit[i];
-            }
-            return segment === routeSplit[i] || paramMatch;
-          });
-
-          if (matched) {
-            var query = route.slice(queryIndex + 1);
-            var queries = {};
-            if (queryIndex !== -1) {
-              query.split('&').forEach(function(query) {
-                var split = query.split('=');
-                queries[split[0]] = split[1];
-              });
-            }
-            var content = routes[i].initializer(path, params, queries);
-
-            if (content instanceof HTMLElement === false)
-              throw Error('(Router) initializer must return an HTMLElement.');
-
-            target.innerHTML = '';
-            target.appendChild(content);
-
-            return;
+        var params = {};
+        var matched = routeSplit.length === patternSplit.length && patternSplit.every(function(segment, i) {
+          var paramMatch = segment.match(/^:([a-zA-Z]+)$/);
+          if (paramMatch) {
+            params[paramMatch[1]] = routeSplit[i];
           }
-        }
+          return segment === routeSplit[i] || paramMatch;
+        });
+
+        if (!matched)
+          continue;
+
+
+        var queryString = Object.keys(route.query)
+          .map(function(key) {
+            var value = route.query[key];
+            if (Array.isArray(value)) {
+              return value.map(function(v) {
+                return `${key}=${v}`;
+              }).join('&');;
+            } else {
+              return `${key}=${route.query[key]}`
+            }
+          })
+          .join('&');
+        
+        if (!doNotPushState)
+          history.pushState(null, '', `${location.pathname}#${route.path}${queryString ? '?' : ''}${queryString}`)
+
+        var content = routes[i].initializer(route.path, params, route.query);
+
+        if (content instanceof HTMLElement === false)
+          throw Error('(Router) initializer must return an HTMLElement.');
+
+        target.innerHTML = '';
+        target.appendChild(content);
+
+        return;
+
       }
 
-      throw Error('(Router) did not find route matching: ' + route)
+      throw Error('(Router) did not find route matching: ' + route.path)
+    }
+
+    
+
+    /**
+     * Attempts to match a Route against a registered pattern, and generate a new view using the registered initializer.
+     *  
+     * @param {Route} route - the Route object to load that will be provided to the matched initializer
+     */
+    this.go = function(route) {
+      loadRoute(route);
+    }
+
+    // read from the address bar and load a route
+    function loadFromURL() {
+      // find start of query if there is one
+      var queryIndex = location.href.indexOf('?');
+
+      // get path from href
+      var path = location.href.slice(0, queryIndex === -1 ? location.href.length : queryIndex).replace(location.origin, '');
+
+      // if serving from file protocol, remove the filepath from the path
+      if (location.origin === 'file://')
+        path = path.replace(location.pathname, '');
+
+      // remove lead hash from path
+      path = path.replace('/#', '').replace('#', '');
+
+      // convert empty path to root slash
+      path = path === '' ? '/' : path;
+
+      // remove trailing slash if present
+      if (path.length > 1 && path[path.length - 1] === '/')
+        path = path.slice(0, path.length - 1);
+
+      if (queryIndex !== -1) {
+        var queryString = location.href.slice(queryIndex + 1);
+        var hashIndex = queryString.lastIndexOf('#');
+        var hash = queryString.slice(hashIndex === -1 ? queryString.length : hashIndex);
+        queryString = queryString.replace(hash, '');
+        var query = {};
+        queryString.split('&').forEach(function(kv) {
+          var [key, value] = kv.split('=');
+          if (query[key] !== undefined) {
+            if (Array.isArray(query[key]))
+              query[key].push(value);
+            else
+              query[key] = [query[key], value];
+          } else {
+            query[key] = value;
+          }
+        });
+        loadRoute(new Route(path, query), true);
+        // TODO navigate to hash if it exists
+      } else {
+        loadRoute(new Route(path), true);
+      }
     };
+
+    // load from initial page load URL
+    setTimeout(loadFromURL.bind(this));
+
+    // update on history changes
+    // window.addEventListener('popstate', loadFromURL.bind(this));
+    window.addEventListener('popstate', console.log);
 
     return this;
 
@@ -523,6 +645,7 @@
     State: State,
     StateElement: StateElement,
     Router: Router,
+    Route: Route,
   };
 
   // check for naming collisions and assign global references

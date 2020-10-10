@@ -20,7 +20,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#update">update</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#update">update</a></li><li data-type='method'><a href="State.html#useLocalStorage">useLocalStorage</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -37,7 +37,7 @@
         <article>
             <pre class="prettyprint source linenums"><code>(function() {
 
-  // POLYFILLS
+  // ANCHOR POLYFILLS
 
   // @ts-ignore (findIndex)
   if (!Array.prototype.findIndex) {
@@ -90,6 +90,7 @@
 
 
 
+  // ANCHOR globals/helpers
 
   var LIB_NAME = 'EricUILib';
   var GLOBAL_NAME = LIB_NAME;
@@ -101,6 +102,20 @@
   function error(message) {
     return Error(LIB_NAME + ': ' + message);
   }
+
+  function validateRoutePattern(pattern) {
+    if (typeof pattern !== 'string')
+      throw Error('pattern must be a string');
+    if (pattern === '')
+      throw Error('pattern must not be empty');
+    if (pattern[0] !== '/')
+      throw Error('pattern must have a leading slash: ' + pattern);
+    if (pattern.length > 1 &amp;&amp; pattern[pattern.length - 1] === '/')
+      throw Error('pattern must not have a trailing slash: ' + pattern);
+  }
+
+
+  // ANCHOR types
 
   /**
    * @callback ModifierCallback
@@ -118,6 +133,13 @@
    * @param {Array.&lt;DataState>} states - The states that trigger this callback.
    */
 
+   /**
+    * @callback RouteInitiazlier - A function that must return DOM content for a given route, provided with HREF and query params.
+    * @param {string} route - route without query params
+    * @param {Object.&lt;string, string>} params - key/value path params object
+    * @param {Object.&lt;string, string>} queries - key/value query object
+    */
+
   /**
    * @typedef {{
    *    textContent: (string|number|DataState),
@@ -128,6 +150,8 @@
    * }} StateElementOptions
    */
 
+
+  // ANCHOR DataState()
   /**
    * Represents one piece of state.  This is not meant to be called on its own.
    * @constructor
@@ -201,6 +225,8 @@
 
   }
 
+
+  // ANCHOR State()
   /**
    * Represents a collection of states
    * @constructor
@@ -231,6 +257,8 @@
       return outObject;
     })(initialState);
 
+    var dataKeys = Object.keys(stateCopy);
+
     /**
      * Key/value of state objects.
      * 
@@ -239,7 +267,7 @@
     this.data = {};
 
     // fill data object with DataStates
-    Object.keys(stateCopy).forEach(function(key) {
+    dataKeys.forEach(function(key) {
       var value = stateCopy[key];
       var dataState = new DataState(value);
       Object.defineProperty(this.data, key, {
@@ -256,16 +284,73 @@
      * Executes all subscription callbacks on all DataStates.
      */
     this.update = function() {
-      Object.keys(this.data).forEach(function(key) {
+      dataKeys.forEach(function(key) {
         this.data[key].update();
-      });
+      }, this);
     };
+
+    // private method for use with localStorage
+    var serialize = function () {
+      var obj = {};
+      dataKeys.forEach(function(key) {
+        obj[key] = this.data[key].get();
+      }, this);
+      return JSON.stringify(obj);
+    }.bind(this);
+
+    var loadState = function(state) {
+      dataKeys.forEach(function(key) {
+        this.data[key].set(state[key]);
+      }, this);
+    }.bind(this);
+
+    /**
+     * Creates or loads an entry in localStorage for the entire state object.
+     * The state must be serializable for this to work correctly.
+     * A function is returned that can be used to update the state in localStorage
+     * 
+     * @param {string} name - unique name used for localStorage, prefix with "state-ui-"
+     * @returns {Function|undefined} - the update function used to update the state in localStorage
+     */
+    this.useLocalStorage = function(name) {
+
+      // validate name value
+      if (typeof name !== 'string' || name === '') {
+        throw error('(State.useLocalStorage) "name" must be a non-empty string.');
+      }
+
+      name = 'state-ui-' + name;
+
+      // validate unique name
+      if (State.localStores.indexOf(name) !== -1) {
+        throw error('(State.useLocalStorage) "name" value was not unique.');
+      }
+
+      var storedState = localStorage.getItem(name);
+      
+      
+      // attempt to load pre-existing state or initialize the localStorage
+      if (storedState) {
+        loadState(JSON.parse(storedState));
+      } else {
+        localStorage.setItem(name, serialize());
+      }
+
+      // return update function
+      return function() {
+        localStorage.setItem(name, serialize());
+      };
+
+    }
 
     return this;
 
   }
 
+  State.localStores = [];
 
+
+  // ANCHOR StateElement()
   /**
    * Create a DOM element that is tied to state in some way.
    * @constructor
@@ -372,7 +457,7 @@
         element.value = newValue.toString();
       }, true);
 
-      element.addEventListener('input', () => {
+      element.addEventListener('input', function() {
         // @ts-ignore (value)
         bindTo.set(element.value);
       });
@@ -396,10 +481,208 @@
 
   }
 
+  // ANCHOR Route()
+  /**
+   * A Route() represents a location on your website, and is a combination of a path and optional query.
+   * 
+   * @constructor
+   * @param {string} path - the path that represents the view you want to show, ex. /profiles/123
+   * @param {Object} [query] - key/value pairs representing a URL query string
+   *  
+   */
+  function Route(path, query) {
+
+    validateRoutePattern(path)
+
+    this.path = path;
+    this.query = query || {};
+    return this;
+
+  }
+
+  // ANCHOR Router()
+  /**
+   * Router() is a singleton class that lets you load content based on the current HREF.
+   * It allows you simulate a multipage app from a single page.
+   * 
+   * @constructor
+   * @param {HTMLElement} target - the element where the desired content will be loaded for all routes
+   * 
+   */
+  function Router(target) {
+
+    if (Router.instance) {
+      return Router.instance;
+    }
+
+    // private vars
+    var routes = [];
+
+    /**
+     * Adds a route handler for the router, which loads a given element when the HREF matches a given pattern.
+     * Accepts a pattern to match and a function that will be provided with the queries and params that must return the desired content for the route.
+     * 
+     * @param {string} pattern - string to match route against.  string can use params like ":param" in place of route segments.  must start with a forward slash.
+     * @param {RouteInitiazlier} initializer - function that should create the DOM content to be loaded for this route
+     */
+    this.addRoute = function(pattern, initializer) {
+      // validate pattern
+      validateRoutePattern(pattern)
+
+      var segMap = {};
+      pattern.split('/').forEach(function(segment) {
+        segMap[segment] = segMap[segment] === undefined ? 1 : segMap[segment] + 1;
+      });
+      var duplicateParams = [];
+      Object.keys(segMap).forEach(function(segment) {
+        if (segment.match(/^:[a-zA-Z]+$/) &amp;&amp; segMap[segment] > 1) {
+          duplicateParams.push(segment);
+        }
+      });
+
+      if (duplicateParams.length > 0)
+        throw Error('Duplicate params found: ' + duplicateParams.join(', '));
+
+      // validate initializer
+      if (typeof initializer !== 'function') 
+        throw Error('(Router) initializer must be a function');
+
+      routes.push({ pattern: pattern, initializer: initializer });
+    };
+
+    // used internall, and exposed externally through this.go()
+    function loadRoute(route, doNotPushState) {
+      if ((route instanceof Route) === false)
+        throw Error('(Router) route must be a Route object.')
+
+      for (var i = 0; i &lt; routes.length; i++) {
+        var pattern = routes[i].pattern;
+
+        var routeSplit = route.path.slice(1).split('/');
+        var patternSplit = pattern.slice(1).split('/');
+
+        var params = {};
+        var matched = routeSplit.length === patternSplit.length &amp;&amp; patternSplit.every(function(segment, i) {
+          var paramMatch = segment.match(/^:([a-zA-Z]+)$/);
+          if (paramMatch) {
+            params[paramMatch[1]] = routeSplit[i];
+          }
+          return segment === routeSplit[i] || paramMatch;
+        });
+
+        if (!matched)
+          continue;
+
+
+        var queryString = Object.keys(route.query)
+          .map(function(key) {
+            var value = route.query[key];
+            if (Array.isArray(value)) {
+              return value.map(function(v) {
+                return `${key}=${v}`;
+              }).join('&amp;');;
+            } else {
+              return `${key}=${route.query[key]}`
+            }
+          })
+          .join('&amp;');
+        
+        if (!doNotPushState)
+          history.pushState(null, '', `${location.pathname}#${route.path}${queryString ? '?' : ''}${queryString}`)
+
+        var content = routes[i].initializer(route.path, params, route.query);
+
+        if (content instanceof HTMLElement === false)
+          throw Error('(Router) initializer must return an HTMLElement.');
+
+        target.innerHTML = '';
+        target.appendChild(content);
+
+        return;
+
+      }
+
+      throw Error('(Router) did not find route matching: ' + route.path)
+    }
+
+    
+
+    /**
+     * Attempts to match a Route against a registered pattern, and generate a new view using the registered initializer.
+     *  
+     * @param {Route} route - the Route object to load that will be provided to the matched initializer
+     */
+    this.go = function(route) {
+      loadRoute(route);
+    }
+
+    // read from the address bar and load a route
+    function loadFromURL() {
+      // find start of query if there is one
+      var queryIndex = location.href.indexOf('?');
+
+      // get path from href
+      var path = location.href.slice(0, queryIndex === -1 ? location.href.length : queryIndex).replace(location.origin, '');
+
+      // if serving from file protocol, remove the filepath from the path
+      if (location.origin === 'file://')
+        path = path.replace(location.pathname, '');
+
+      // remove lead hash from path
+      path = path.replace('/#', '').replace('#', '');
+
+      // convert empty path to root slash
+      path = path === '' ? '/' : path;
+
+      // remove trailing slash if present
+      if (path.length > 1 &amp;&amp; path[path.length - 1] === '/')
+        path = path.slice(0, path.length - 1);
+
+      if (queryIndex !== -1) {
+        var queryString = location.href.slice(queryIndex + 1);
+        var hashIndex = queryString.lastIndexOf('#');
+        var hash = queryString.slice(hashIndex === -1 ? queryString.length : hashIndex);
+        queryString = queryString.replace(hash, '');
+        var query = {};
+        queryString.split('&amp;').forEach(function(kv) {
+          var [key, value] = kv.split('=');
+          if (query[key] !== undefined) {
+            if (Array.isArray(query[key]))
+              query[key].push(value);
+            else
+              query[key] = [query[key], value];
+          } else {
+            query[key] = value;
+          }
+        });
+        loadRoute(new Route(path, query), true);
+        // TODO navigate to hash if it exists
+      } else {
+        loadRoute(new Route(path), true);
+      }
+    };
+
+    // load from initial page load URL
+    setTimeout(loadFromURL.bind(this));
+
+    // update on history changes
+    // window.addEventListener('popstate', loadFromURL.bind(this));
+    window.addEventListener('popstate', console.log);
+
+    return this;
+
+  }
+
+  Router.instance = null;
+
+  // ANCHOR exports
+
   var exports = {
     DataState: DataState,
     State: State,
     StateElement: StateElement,
+    Router: Router,
+    Route: Route,
   };
 
   // check for naming collisions and assign global references
@@ -450,7 +733,7 @@
 
 <footer>
     
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc" target="_blank">JSDoc 3.6.6</a> on 10/5/2020 using the <a href="https://github.com/Grafluxe/boxy-jsdoc-template" target="_blank">boxy-jsdoc-template</a> theme.
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc" target="_blank">JSDoc 3.6.6</a> on 10/10/2020 using the <a href="https://github.com/Grafluxe/boxy-jsdoc-template" target="_blank">boxy-jsdoc-template</a> theme.
 </footer>
 
 <script src="scripts/prettify/prettify.js"></script>

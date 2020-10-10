@@ -11,8 +11,13 @@
   <div id="counter-display"></div>
   <input id="input">
   <div id="input-display"></div>
+  <button id="link">Link</button>
+  <a href="#go">go</a>
 
   <div id="router-view"></div>
+
+  <div style="height: 2000px;">asd</div>
+  <div id="here"></div>
 
   <script>
     // test global naming collisions
@@ -43,12 +48,28 @@
     // state.data.counter = 'asd';
 
     const router = new Router(document.getElementById('router-view'));
-    router.addRoute('/:param/something', () => {
+
+    router.addRoute('/:param/something', (path, params, query) => {
       const div = document.createElement('div');
-      div.textContent = 'sup';
+      div.textContent = `param: ${params.param}, query: ${query.test}`;
       return div;
     });
-    router.loadRoute('/param1/something?query1=value');
+
+    router.addRoute('/', (path, params, query) => {
+      const div = document.createElement('div');
+      div.textContent = `home`;
+      return div;
+    });
+
+    new StateElement('#link', {
+      handlers: {
+        click: () => {
+          router.go(new Route('/1/something', {
+            test: 'test'
+          }));
+        },
+      },
+    });
   </script>
 </body>
 </html>
