@@ -282,7 +282,7 @@
      * A function is returned that can be used to update the state in localStorage
      * 
      * @param {string} name - unique name used for localStorage, prefixed with "state-ui-" to avoid naming collisions
-     * @returns {Function|undefined} - the update function used to update the state in localStorage
+     * @returns {Function} - the update function used to update the state in localStorage
      */
     this.useLocalStorage = function(name) {
 
