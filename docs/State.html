@@ -20,7 +20,7 @@
 <label for="nav-trigger" class="overlay"></label>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#mutate">mutate</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="Route.html">Route</a></li><li><a href="Router.html">Router</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="Router.html#addRoute">addRoute</a></li><li data-type='method'><a href="Router.html#go">go</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#update">update</a></li><li data-type='method'><a href="State.html#useLocalStorage">useLocalStorage</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="DataState.html">DataState</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="DataState.html#get">get</a></li><li data-type='method'><a href="DataState.html#modify">modify</a></li><li data-type='method'><a href="DataState.html#mutate">mutate</a></li><li data-type='method'><a href="DataState.html#set">set</a></li><li data-type='method'><a href="DataState.html#subscribe">subscribe</a></li><li data-type='method'><a href="DataState.html#update">update</a></li></ul></li><li><a href="Route.html">Route</a></li><li><a href="Router.html">Router</a><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="Router.html#addRoute">addRoute</a></li><li data-type='method'><a href="Router.html#go">go</a></li></ul></li><li><a href="State.html">State</a><ul class='members'><li class='list-title'>Members</li><li data-type='member'><a href="State.html#data">data</a></li></ul><ul class='methods'><li class='list-title'>Methods</li><li data-type='method'><a href="State.html#get">get</a></li><li data-type='method'><a href="State.html#modify">modify</a></li><li data-type='method'><a href="State.html#mutate">mutate</a></li><li data-type='method'><a href="State.html#set">set</a></li><li data-type='method'><a href="State.html#subscribe">subscribe</a></li><li data-type='method'><a href="State.html#update">update</a></li><li data-type='method'><a href="State.html#useLocalStorage">useLocalStorage</a></li></ul></li><li><a href="StateElement.html">StateElement</a></li></ul><h3>Tutorials</h3><ul><li><a href="tutorial-StateElement_.html">StateElement</a></li></ul><h3><a href="global.html">Global</a></h3>
 </nav>
 
 <div id="main">
@@ -156,7 +156,7 @@
 
 
 <div class="description">
-    Key/value of state objects.
+    Key/value of state objects.  Can be accessed directly if you prefer calling methods directly on data instead of on the State object itself.
 </div>
 
 
@@ -189,17 +189,44 @@
     
 
 
-<div class="group" id="update">
+<div class="group" id="get">
 
 
-    <h4 class="name"><span class="type-signature"></span><b>update</b><span class="signature">(<span class="sig-params"></span>)</span><span class="type-signature"></span></h4>
+    <h4 class="name"><span class="type-signature"></span><b>get</b><span class="signature">(<span class="sig-params">dataName</span>)</span><span class="type-signature"></span></h4>
 
     
 
 
 
 <div class="description">
-    Executes all subscription callbacks on all DataStates.
+    Get the current value for a piece of state by name.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the name you used in the initialization of the state.</div>
+
+    
 </div>
 
 
@@ -225,6 +252,30 @@
 
 
 
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line314">line 314</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="modify">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>modify</b><span class="signature">(<span class="sig-params">dataName<span class="params-divider">, </span>modifier</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Modify the value for a piece of state by name based on its current value, and execute all subscriptions.
+</div>
 
 
 
@@ -232,7 +283,421 @@
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line258">line 258</a></div>
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the name you used in the initialization of the state.</div>
+
+    
+
+    
+        <span class="name">modifier</span><span class="type"><span class="param-type">:<a href="global.html#ModifierCallback">ModifierCallback</a></span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the callback to modify the value with, which receives the current value as an argument.</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line334">line 334</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="mutate">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>mutate</b><span class="signature">(<span class="sig-params">dataName<span class="params-divider">, </span>value</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Change the value for a piece of state by name without executing subscriptions.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the name you used in the initialization of the state.</div>
+
+    
+
+    
+        <span class="name">value</span><span class="type"><span class="param-type">:any</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the value to change the state to.</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line344">line 344</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="set">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>set</b><span class="signature">(<span class="sig-params">dataName<span class="params-divider">, </span>value</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Set the value for a piece of state by name, and execute all subscriptions.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the name you used in the initialization of the state.</div>
+
+    
+
+    
+        <span class="name">value</span><span class="type"><span class="param-type">:any</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the value to update the state with.</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line324">line 324</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="subscribe">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>subscribe</b><span class="signature">(<span class="sig-params">dataName<span class="params-divider">, </span>callback<span class="params-divider">, </span>runImmediately</span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Add a callback to be executed when set(), modify() or update() is called on the data.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the name you used in the initialization of the state.</div>
+
+    
+
+    
+        <span class="name">callback</span><span class="type"><span class="param-type">:<a href="global.html#SubscriptionCallback">SubscriptionCallback</a></span></span>
+    
+
+    
+
+    
+
+    <div class="description last">the callback to be run, which receives the current value of the data.</div>
+
+    
+
+    
+        <span class="name">runImmediately</span><span class="type"><span class="param-type">:boolean</span></span>
+    
+
+    
+
+    
+
+    <div class="description last">when "true", the callback is run immediately in addition to at each update</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line370">line 370</a></div>
+
+
+</div>
+
+        
+            
+
+
+    
+
+
+<div class="group" id="update">
+
+
+    <h4 class="name"><span class="type-signature"></span><b>update</b><span class="signature">(<span class="sig-params">dataName<span class="signature-attributes">opt</span></span>)</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    Execute all subscriptions for either one data or all datas without updating their values.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters</h5>
+    
+
+<div class="params">
+    
+
+    
+        <span class="name">dataName</span><span class="type"><span class="param-type">:string</span></span>
+    
+
+    
+
+    
+        <span class="attributes">
+        
+            (optional)<br>
+        
+
+        
+
+        
+        </span>
+    
+
+    <div class="description last">the name you used in the initialization of the state. when provided, this is the only data that update() is called on, otherwise it is called on all datas.</div>
+
+    
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line353">line 353</a></div>
 
 
 </div>
@@ -327,7 +792,7 @@
 
 
 
-<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line287">line 287</a></div>
+<div class="src">Source: <a href="dist.js.html">dist.js</a>, <a href="dist.js.html#line278">line 278</a></div>
 
 
 </div>

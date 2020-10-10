@@ -232,7 +232,7 @@
     var dataKeys = Object.keys(stateCopy);
 
     /**
-     * Key/value of state objects.
+     * Key/value of state objects.  Can be accessed directly if you prefer calling methods directly on data instead of on the State object itself.
      * 
      * @type {Object.<string, DataState>}
      */
@@ -251,15 +251,6 @@
         },
       })
     }, this);
-
-    /**
-     * Executes all subscription callbacks on all DataStates.
-     */
-    this.update = function() {
-      dataKeys.forEach(function(key) {
-        this.data[key].update();
-      }, this);
-    };
 
     // private method for use with localStorage
     var serialize = function () {
@@ -314,6 +305,71 @@
       };
 
     }
+
+    /**
+     * Get the current value for a piece of state by name.
+     * 
+     * @param {string} dataName - the name you used in the initialization of the state.
+     */
+    this.get = function(dataName) {
+      return this.data[dataName].get();
+    };
+    
+    /**
+     * Set the value for a piece of state by name, and execute all subscriptions.
+     * 
+     * @param {string} dataName - the name you used in the initialization of the state.
+     * @param {any} value - the value to update the state with.
+     */
+    this.set = function(dataName, value) {
+      this.data[dataName].set(value);
+    };
+    
+    /**
+     * Modify the value for a piece of state by name based on its current value, and execute all subscriptions.
+     * 
+     * @param {string} dataName - the name you used in the initialization of the state.
+     * @param {ModifierCallback} modifier - the callback to modify the value with, which receives the current value as an argument.
+     */
+    this.modify = function(dataName, modifier) {
+      this.data[dataName].modify(modifier);
+    };
+    
+    /**
+     * Change the value for a piece of state by name without executing subscriptions.
+     * 
+     * @param {string} dataName - the name you used in the initialization of the state.
+     * @param {any} value - the value to change the state to.
+     */
+    this.mutate = function(dataName, value) {
+      this.data[dataName].mutate(value);
+    };
+    
+    /**
+     * Execute all subscriptions for either one data or all datas without updating their values.
+     * 
+     * @param {string} [dataName] - the name you used in the initialization of the state. when provided, this is the only data that update() is called on, otherwise it is called on all datas.
+     */
+    this.update = function(dataName) {
+      if (dataName) {
+        this.data[dataName].update();
+      } else {
+        dataKeys.forEach(function(key) {
+          this.data[key].update();
+        }, this);
+      }
+    };
+    
+    /**
+     * Add a callback to be executed when set(), modify() or update() is called on the data.
+     * 
+     * @param {string} dataName - the name you used in the initialization of the state.
+     * @param {SubscriptionCallback} callback - the callback to be run, which receives the current value of the data.
+     * @param {boolean} runImmediately - when "true", the callback is run immediately in addition to at each update
+     */
+    this.subscribe = function(dataName, callback, runImmediately) {
+      this.data[dataName].subscribe(callback, runImmediately);
+    };
 
     return this;
 
