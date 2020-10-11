@@ -636,8 +636,6 @@
         target.innerHTML = '';
         target.appendChild(content);
 
-        console.log('load', window.history.length, currentHistoryLength);
-
         return;
 
       }
@@ -680,10 +678,11 @@
       if (path.length > 1 && path[path.length - 1] === '/')
         path = path.slice(0, path.length - 1);
 
+      var hashIndex = location.href.lastIndexOf('#');
+      var hash = location.href.slice(hashIndex === -1 ? location.href.length : hashIndex);
+      
       if (queryIndex !== -1) {
         var queryString = location.href.slice(queryIndex + 1);
-        var hashIndex = queryString.lastIndexOf('#');
-        var hash = queryString.slice(hashIndex === -1 ? queryString.length : hashIndex);
         queryString = queryString.replace(hash, '');
         var query = {};
         queryString.split('&').forEach(function(kv) {
@@ -698,7 +697,10 @@
           }
         });
         loadRoute(new Route(path, query), true);
-        // TODO navigate to hash if it exists
+
+        // navigate to hash element if present
+        var hashElement = document.getElementById(hash.slice(1));
+        hashElement.scrollIntoView();
       } else {
         loadRoute(new Route(path), true);
       }
@@ -709,14 +711,9 @@
 
     // update on history changes
     window.addEventListener('popstate', function(event) {
-      console.log('before', window.history.length, currentHistoryLength);
 
       var forward = window.history.length > currentHistoryLength;
       var back = window.history.length === currentHistoryLength;
-
-      if (!forward && !back) {
-        console.log('oops');
-      }
       
       currentHistoryLength = window.history.length;
 
@@ -735,7 +732,6 @@
         loadFromURL.call(this);
       }
 
-      console.log('after', window.history.length, currentHistoryLength);
     });
 
     return this;

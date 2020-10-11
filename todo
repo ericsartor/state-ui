@@ -1,8 +1,22 @@
-- router - IN PROGRESS
+todo
+
 - message bus
 - two way binding on arrays and objects
 - tutorials
+- refactor Route() to provide string versions of entire route and query string
+
+tests
+
+- router
+
+before release
+
+- guards on all user inputs
 
 completed
 
+- router
 - localStorage support for persisting state between reloads
+- state
+- two way binding
+- element creation class with state binding
