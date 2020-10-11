@@ -547,6 +547,9 @@
 
     // private vars
     var routes = [];
+    var history = [];
+    var currentRoute = '';
+    var currentHistoryLength = window.history.length;
 
     /**
      * Adds a route handler for the router, which loads a given element when the HREF matches a given pattern.
@@ -617,8 +620,13 @@
           })
           .join('&');
         
-        if (!doNotPushState)
-          history.pushState(null, '', `${location.pathname}#${route.path}${queryString ? '?' : ''}${queryString}`)
+        if (!doNotPushState) {
+          var fullRoute = `${location.pathname}#${route.path}${queryString ? '?' : ''}${queryString}`;
+          window.history.pushState(null, '', fullRoute)
+          history.push(fullRoute);
+          currentRoute = fullRoute;
+          currentHistoryLength = window.history.length;
+        }
 
         var content = routes[i].initializer(route.path, params, route.query);
 
@@ -627,6 +635,8 @@
 
         target.innerHTML = '';
         target.appendChild(content);
+
+        console.log('load', window.history.length, currentHistoryLength);
 
         return;
 
@@ -648,6 +658,8 @@
 
     // read from the address bar and load a route
     function loadFromURL() {
+      currentRoute = location.href;
+
       // find start of query if there is one
       var queryIndex = location.href.indexOf('?');
 
@@ -696,8 +708,35 @@
     setTimeout(loadFromURL.bind(this));
 
     // update on history changes
-    // window.addEventListener('popstate', loadFromURL.bind(this));
-    window.addEventListener('popstate', console.log);
+    window.addEventListener('popstate', function(event) {
+      console.log('before', window.history.length, currentHistoryLength);
+
+      var forward = window.history.length > currentHistoryLength;
+      var back = window.history.length === currentHistoryLength;
+
+      if (!forward && !back) {
+        console.log('oops');
+      }
+      
+      currentHistoryLength = window.history.length;
+
+      if (location.hash.length >1 && location.hash[1] !== '/') {
+        switch (true) {
+          case forward:
+            // real hash change, perform navigation
+            window.history.pushState(null, '', currentRoute + location.hash);
+            currentHistoryLength = window.history.length;
+            break;
+          case back:
+            window.history.back();
+            break;
+        }
+      } else {
+        loadFromURL.call(this);
+      }
+
+      console.log('after', window.history.length, currentHistoryLength);
+    });
 
     return this;
 
