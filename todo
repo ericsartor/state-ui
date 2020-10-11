@@ -3,7 +3,6 @@ todo
 - message bus
 - two way binding on arrays and objects
 - tutorials
-- refactor Route() to provide string versions of entire route and query string
 
 tests
 

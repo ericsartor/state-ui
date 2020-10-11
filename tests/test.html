@@ -49,13 +49,13 @@
 
     const router = new Router(document.getElementById('router-view'));
 
-    router.addRoute('/:param/something', (path, params, query) => {
+    router.addHandler('/:param/something', (path, params, query) => {
       const div = document.createElement('div');
       div.textContent = `param: ${params.param}, query: ${query.test}`;
       return div;
     });
 
-    router.addRoute('/', (path, params, query) => {
+    router.addHandler('/', (path, params, query) => {
       const div = document.createElement('div');
       div.textContent = `home`;
       return div;
@@ -64,9 +64,13 @@
     new StateElement('#link', {
       handlers: {
         click: () => {
-          router.go(new Route('/1/something', {
-            test: 'test'
-          }));
+          const r = new Route({
+            path: '/1/something',
+            query: {
+              test: 'test'
+            },
+          });
+          router.go(r);
         },
       },
     });
